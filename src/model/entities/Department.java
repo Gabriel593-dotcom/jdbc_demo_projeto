@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Department implements Serializable{
 	private static final long serialVersionUID = 1L;
-	// Em javal, se quisermos que os objetos sejam gravados
+	// Em java, se quisermos que os objetos sejam gravados
 	// em arquivos, trafegados em rede, etc. tem-se que implementar
 	//Serializable. 
 	
