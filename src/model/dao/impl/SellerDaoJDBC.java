@@ -87,8 +87,56 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " + "ORDER BY Name");
+
+			rs = st.executeQuery();
+
+			List<Seller> list = new ArrayList<>();
+
+			Map<Integer, Department> map = new HashMap<>();
+			// uma maneira de verificar se o departamento existe ou não usando
+			// o map.
+
+			while (rs.next()) {
+
+				Department dep = map.get(rs.getInt("DepartmentId"));
+				// instancia um objeto Department recebendo o valor referente
+				// ao id de pesquisa guardado na estrutura de dados.
+
+				if (dep == null) {
+					// caso o map estiver vazio, o objeto vai apontar pra nulo
+					// e cair nessa condição if(). Sendo assim, vai ser instanciado um
+					// novo registro de departamento, carregando as informações
+					// e atribuindo ao map.
+
+					// essa lógica se deve ao fato de que vários registros de
+					// sellers podem apontar pra um departamento apenas.
+					// porque a cardinalidade atende ao conceito
+					// 1 pra n. sendo 1 vendedor pode pertencer apenas
+					// a um departamento e um departamento pode ter vários
+					// vendedores.
+
+					dep = loadDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+
+				Seller seller = loadSeller(rs, dep);
+				list.add(seller);
+			}
+
+			return list;
+		}
+
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}
 	}
 
 	@Override
@@ -116,21 +164,20 @@ public class SellerDaoJDBC implements SellerDao {
 				Department dep = map.get(rs.getInt("DepartmentId"));
 				// instancia um objeto Department recebendo o valor referente
 				// ao id de pesquisa guardado na estrutura de dados.
-				
-				
+
 				if (dep == null) {
 					// caso o map estiver vazio, o objeto vai apontar pra nulo
 					// e cair nessa condição if(). Sendo assim, vai ser instanciado um
 					// novo registro de departamento, carregando as informações
-					// e atribuindo ao map. 
-					
-					//essa lógica se deve ao fato de que vários registros de
-					// sellers podem apontar pra um departamento apenas. 
-					// porque a cardinalidade atende ao conceito 
+					// e atribuindo ao map.
+
+					// essa lógica se deve ao fato de que vários registros de
+					// sellers podem apontar pra um departamento apenas.
+					// porque a cardinalidade atende ao conceito
 					// 1 pra n. sendo 1 vendedor pode pertencer apenas
 					// a um departamento e um departamento pode ter vários
-					//vendedores.
-					
+					// vendedores.
+
 					dep = loadDepartment(rs);
 					map.put(rs.getInt("DepartmentId"), dep);
 				}
@@ -145,7 +192,7 @@ public class SellerDaoJDBC implements SellerDao {
 		catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		}
-		
+
 		finally {
 			Db.closeStatment(st);
 			Db.closeResultSet(rs);
