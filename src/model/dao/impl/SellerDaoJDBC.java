@@ -105,7 +105,7 @@ public class SellerDaoJDBC implements SellerDao {
 			st.setInt(1, id);
 
 			int row = st.executeUpdate();
-		
+
 			if (row == 0) {
 				throw new DbException("no one register deleted");
 			}
